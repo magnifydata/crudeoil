@@ -8,7 +8,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 # 1. Data Acquisition (same as before, with caching)
 @st.cache_data
 def get_data(ticker: str, start_date: str, end_date: str): # Add type hints for ticker start_date end_date
-    data = yf.download(ticker, start=start_date, end=end_date)
+    data = yf.download(ticker, start=start_date, end_date=end_date)
     return data
 
 ticker = "CL=F"  # WTI Crude Oil Futures
@@ -52,19 +52,22 @@ st.write(f"Root Mean Squared Error (RMSE): {rmse_naive:.2f}")
 # 6. Simple Moving Average (SMA) Model
 window_size = st.slider("SMA Window Size", min_value=3, max_value=60, value=7)  # Add a slider for window size
 
-# Calculate moving average on the training data
-train_data['SMA'] = train_data['Close'].rolling(window=window_size).mean()
+# Calculate moving average on the training data - WE DONT NEED IT ANYMORE
+#train_data['SMA'] = train_data['Close'].rolling(window=window_size).mean()
 
-# Fill NaN values in the beginning of the SMA with the mean of the 'Close' column in the training data
-train_data['SMA'].fillna(train_data['Close'].mean(), inplace=True)
+# Fill NaN values in the beginning of the SMA with the mean of the 'Close' column in the training data - WE DONT NEED IT ANYMORE
+#train_data['SMA'].fillna(train_data['Close'].mean(), inplace=True)
 
 # Make predictions using the SMA on the test data
 y_pred_sma = []
-for i in range(len(test_data)):
-    if i < window_size - 1: #If the index is less than window size just take the mean of the close price for the training dataset
-        y_pred_sma.append(train_data['Close'].mean())
-    else:
-        y_pred_sma.append(train_data['Close'][-window_size:].mean())
+# Combine train and test data for rolling window calculation
+combined_data = pd.concat([train_data['Close'], test_data['Close']], axis=0)
+
+# Calculate SMA on the combined data
+sma_values = combined_data.rolling(window=window_size).mean()
+
+# Extract SMA predictions for the test period
+y_pred_sma = sma_values[train_data.index[-1]:].iloc[1:].values
 
 # Evaluate the SMA Model
 mae_sma = mean_absolute_error(y_true, y_pred_sma)
