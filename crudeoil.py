@@ -86,7 +86,8 @@ st.write(f"### Simple Moving Average (SMA) - Window Size: {window_size}")
 st.write(f"Mean Absolute Error (MAE): {mae_sma:.2f}")
 st.write(f"Root Mean Squared Error (RMSE): {rmse_sma:.2f}")
 
-# 7. Vector Autoregression (VAR) Model
+# 7. Vector Autoregression (VAR) Model - COMMENTED OUT
+"""
 # Select the features to be used in the VAR model
 features = ['Close', 'Open', 'High', 'Low', 'Volume'] #Using all
 
@@ -105,6 +106,7 @@ rmse_var = np.sqrt(mean_squared_error(y_true, y_pred_var))
 st.write(f"### Vector Autoregression (VAR) Model")
 st.write(f"Mean Absolute Error (MAE): {mae_var:.2f}")
 st.write(f"Root Mean Squared Error (RMSE): {rmse_var:.2f}")
+"""
 
 # 8. Visualize the Predictions (All Models)
 st.write("### Forecast Comparison")
@@ -112,7 +114,7 @@ fig, ax = plt.subplots(figsize=(12, 6))
 ax.plot(test_data['Close'], label='Actual', color='blue')
 ax.plot(test_data.index, y_pred_naive, label='Naive Forecast', color='green')
 ax.plot(test_data.index, y_pred_sma, label=f'SMA ({window_size} days)', color='red')
-ax.plot(test_data.index, y_pred_var, label='VAR Model', color='orange')
+#ax.plot(test_data.index, y_pred_var, label='VAR Model', color='orange') # removed to graph
 ax.set_xlabel('Date')
 ax.set_ylabel('Price (USD)')
 ax.set_title('Forecast Comparison')
