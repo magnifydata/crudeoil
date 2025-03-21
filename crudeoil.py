@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import datetime
-#from statsmodels.tsa.ar.model import AutoReg #removed and adding the line below
 from statsmodels.tsa.arima.model import ARIMA
 
 # 1. Data Acquisition (same as before, with caching)
@@ -91,19 +90,25 @@ st.write(f"Root Mean Squared Error (RMSE): {rmse_sma:.2f}")
 # Initialize list to store predictions
 y_pred_ar = []
 
+# Define the ARIMA model order
+order = (5, 0, 0)
+
+# Use all data for training
+history = combined_data['Close'].to_list()
 # Iterate through the test data and make predictions
-history = [x for x in train_data['Close']]
 for i in range(len(test_data)):
     # Train the AR model
-    model = ARIMA(history, order=(5, 0, 0)) # added the new ARIMA
+    model = ARIMA(history[:len(train_data) + i], order=order)
     model_fit = model.fit()
     # Make predictions on the test data
     output = model_fit.forecast()
     yhat = output[0]
     # Append the prediction to the list
     y_pred_ar.append(yhat)
-    obs = test_data['Close'][i]
-    history.append(obs)
+
+    # update history to what is used to be known.
+    history.append(test_data['Close'].iloc[i]) # append the testing value.
+
 # Evaluate the AR Model
 mae_ar = mean_absolute_error(y_true, y_pred_ar)
 rmse_ar = np.sqrt(mean_squared_error(y_true, y_pred_ar))
