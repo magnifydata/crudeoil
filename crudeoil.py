@@ -94,7 +94,7 @@ y_pred_exp = []
 fit = ExponentialSmoothing(train_data['Close'], seasonal_periods=12, trend='add', seasonal='add').fit()
 
 # Iterate through the test data and make predictions
-for date, value in test_data['Close'].items():
+for date in test_data.index:
     # Forecast the next value
     y_pred = fit.forecast(1).values[0]
 
@@ -102,7 +102,7 @@ for date, value in test_data['Close'].items():
     y_pred_exp.append(y_pred)
 
     # Update the model with the actual value from the test data
-    fit = ExponentialSmoothing(combined_data['Close'][:date].dropna(), seasonal_periods=12, trend='add', seasonal='add').fit()
+    fit = ExponentialSmoothing(combined_data[:date].dropna(), seasonal_periods=12, trend='add', seasonal='add').fit()
 
 # Evaluate the Exponential Smoothing Model
 mae_exp = mean_absolute_error(y_true, y_pred_exp)
