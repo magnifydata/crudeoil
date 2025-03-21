@@ -5,7 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import datetime
-from statsmodels.tsa.ar.model import AutoReg
+#from statsmodels.tsa.ar.model import AutoReg #removed and adding the line below
+from statsmodels.tsa.arima.model import ARIMA
 
 # 1. Data Acquisition (same as before, with caching)
 @st.cache_data
@@ -87,9 +88,8 @@ st.write(f"Mean Absolute Error (MAE): {mae_sma:.2f}")
 st.write(f"Root Mean Squared Error (RMSE): {rmse_sma:.2f}")
 
 # 7. Autoregression (AR) Model
-
 # Train the AR model
-model = AutoReg(train_data['Close'], lags=5)
+model = ARIMA(train_data['Close'], order=(5,0,0)) # added the new ARIMA
 model_fit = model.fit()
 
 # Make predictions on the test data
