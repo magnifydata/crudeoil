@@ -5,8 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import datetime
-#from statsmodels.tsa.ar.model import AutoReg #removed and adding the line below
-from statsmodels.tsa.arima.model import ARIMA
+import pmdarima as pm
 
 # 1. Data Acquisition (same as before, with caching)
 @st.cache_data
@@ -87,36 +86,20 @@ st.write(f"### Simple Moving Average (SMA) - Window Size: {window_size}")
 st.write(f"Mean Absolute Error (MAE): {mae_sma:.2f}")
 st.write(f"Root Mean Squared Error (RMSE): {rmse_sma:.2f}")
 
-# 7. Autoregression (AR) Model
-# Initialize list to store predictions
-y_pred_ar = []
+# 7. Autoregressive Integrated Moving Average (ARIMA) Model
+# Train the model
+model = pm.auto_arima(train_data['Close'], seasonal=False, trace=True, error_action='ignore', suppress_warnings=True)
 
-# Define the ARIMA model order
-order = (5, 0, 0)
+# Make predictions
+y_pred_arima, conf_int = model.predict(n_periods=len(test_data), return_conf_int=True) #added also the comf_int
 
-# Use all data for training
-history = combined_data['Close'].values.tolist()  #  changed
-# Iterate through the test data and make predictions
-for i in range(len(test_data)):
-    # Train the AR model
-    model = ARIMA(history[:len(train_data) + i], order=order)
-    model_fit = model.fit()
-    # Make predictions on the test data
-    output = model_fit.forecast()
-    yhat = output[0]
-    # Append the prediction to the list
-    y_pred_ar.append(yhat)
+# Evaluate the model
+mae_arima = mean_absolute_error(y_true, y_pred_arima)
+rmse_arima = np.sqrt(mean_squared_error(y_true, y_pred_arima))
 
-    # update history to what is used to be known.
-    history.append(test_data['Close'].iloc[i]) # append the testing value.
-
-# Evaluate the AR Model
-mae_ar = mean_absolute_error(y_true, y_pred_ar)
-rmse_ar = np.sqrt(mean_squared_error(y_true, y_pred_ar))
-
-st.write(f"### Autoregression (AR) Model")
-st.write(f"Mean Absolute Error (MAE): {mae_ar:.2f}")
-st.write(f"Root Mean Squared Error (RMSE): {rmse_ar:.2f}")
+st.write(f"### Autoregressive Integrated Moving Average (ARIMA) Model")
+st.write(f"Mean Absolute Error (MAE): {mae_arima:.2f}")
+st.write(f"Root Mean Squared Error (RMSE): {rmse_arima:.2f}")
 
 # 8. Visualize the Predictions (All Models)
 st.write("### Forecast Comparison")
@@ -124,7 +107,8 @@ fig, ax = plt.subplots(figsize=(12, 6))
 ax.plot(test_data['Close'], label='Actual', color='blue')
 ax.plot(test_data.index, y_pred_naive, label='Naive Forecast', color='green')
 ax.plot(test_data.index, y_pred_sma, label=f'SMA ({window_size} days)', color='red')
-ax.plot(test_data.index, y_pred_ar, label='AR Model', color='orange')
+ax.plot(test_data.index, y_pred_arima, label='ARIMA Model', color='orange')
+ax.fill_between(test_data.index, conf_int[:, 0], conf_int[:, 1], color='orange', alpha=0.3) #added the comf_int
 ax.set_xlabel('Date')
 ax.set_ylabel('Price (USD)')
 ax.set_title('Forecast Comparison')
