@@ -4,18 +4,27 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+import datetime
+import time
 
 # 1. Data Acquisition (same as before, with caching)
 @st.cache_data
-def get_data(ticker: str, start_date: str, end_date: str): # Add type hints for ticker start_date end_date
-    data = yf.download(ticker, start=start_date, end_date=end_date)
-    return data
+def get_data(ticker: str, start_date: datetime, end_date: datetime): # Change to datetime object
+    try:
+        data = yf.download(ticker, start=start_date, end=end_date)
+        return data
+    except Exception as e:
+        st.error(f"Error downloading data: {e}")
+        return None
 
 ticker = "CL=F"  # WTI Crude Oil Futures
-start_date = str("2010-01-01") # Added str
-end_date = str("2024-01-01") # Added str
+start_date = datetime.datetime(2010, 1, 1) #Added datetime object
+end_date = datetime.datetime(2024, 1, 1) #Added datetime object
 
 data = get_data(ticker, start_date, end_date)
+
+if data is None:
+    st.stop()  # Stop execution if data download fails
 
 # 2. Data Cleaning (same as before)
 data.fillna(method='ffill', inplace=True)
