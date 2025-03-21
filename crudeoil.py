@@ -5,13 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import datetime
-import time
+from statsmodels.tsa.api import ExponentialSmoothing
 
 # 1. Data Acquisition (same as before, with caching)
 @st.cache_data
 def get_data(ticker: str, start_date: datetime, end_date: datetime): # Change to datetime object
     try:
-        data = yf.download(ticker, start=start_date, end=end_date)
+        data = yf.download(ticker, start=start_date, end_date=end_date)
         return data
     except Exception as e:
         st.error(f"Error downloading data: {e}")
@@ -86,15 +86,31 @@ st.write(f"### Simple Moving Average (SMA) - Window Size: {window_size}")
 st.write(f"Mean Absolute Error (MAE): {mae_sma:.2f}")
 st.write(f"Root Mean Squared Error (RMSE): {rmse_sma:.2f}")
 
-# 7. Visualize the Predictions (SMA and Naive Forecast)
-st.write("### SMA Forecast vs. Actual Values")
+# 7. Exponential Smoothing Model
+# Fit the model
+fit = ExponentialSmoothing(train_data['Close'], seasonal_periods=12, trend='add', seasonal='add').fit()
+
+# Make predictions on the test data
+y_pred_exp = fit.forecast(len(test_data))
+
+# Evaluate the Exponential Smoothing Model
+mae_exp = mean_absolute_error(y_true, y_pred_exp)
+rmse_exp = np.sqrt(mean_squared_error(y_true, y_pred_exp))
+
+st.write(f"### Exponential Smoothing Model")
+st.write(f"Mean Absolute Error (MAE): {mae_exp:.2f}")
+st.write(f"Root Mean Squared Error (RMSE): {rmse_exp:.2f}")
+
+# 8. Visualize the Predictions (All Models)
+st.write("### Forecast Comparison")
 fig, ax = plt.subplots(figsize=(12, 6))
 ax.plot(test_data['Close'], label='Actual', color='blue')
 ax.plot(test_data.index, y_pred_naive, label='Naive Forecast', color='green')
 ax.plot(test_data.index, y_pred_sma, label=f'SMA ({window_size} days)', color='red')
+ax.plot(test_data.index, y_pred_exp, label='Exponential Smoothing', color='purple')
 ax.set_xlabel('Date')
 ax.set_ylabel('Price (USD)')
-ax.set_title('SMA Forecast vs. Actual Values')
+ax.set_title('Forecast Comparison')
 ax.legend()
 ax.grid(True)
 st.pyplot(fig)
