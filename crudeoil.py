@@ -9,9 +9,9 @@ from statsmodels.tsa.api import ExponentialSmoothing
 
 # 1. Data Acquisition (same as before, with caching)
 @st.cache_data
-def get_data(ticker: str, start_date: datetime, end_date: datetime): # Change to datetime object
+def get_data(ticker: str, start: datetime, end: datetime): # Change end_date to end
     try:
-        data = yf.download(ticker, start=start_date, end_date=end_date)
+        data = yf.download(ticker, start=start, end=end) #Change end_date to end
         return data
     except Exception as e:
         st.error(f"Error downloading data: {e}")
