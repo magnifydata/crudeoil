@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import datetime
-from statsmodels.tsa.api import ExponentialSmoothing
+from statsmodels.tsa.api import VAR
 
 # 1. Data Acquisition (same as before, with caching)
 @st.cache_data
@@ -86,31 +86,25 @@ st.write(f"### Simple Moving Average (SMA) - Window Size: {window_size}")
 st.write(f"Mean Absolute Error (MAE): {mae_sma:.2f}")
 st.write(f"Root Mean Squared Error (RMSE): {rmse_sma:.2f}")
 
-# 7. Exponential Smoothing Model
-# Initialize list to store predictions
-y_pred_exp = []
+# 7. Vector Autoregression (VAR) Model
+# Select the features to be used in the VAR model
+features = ['Close', 'Open', 'High', 'Low', 'Volume'] #Using all
 
-# Train the initial model on the training data
-fit = ExponentialSmoothing(train_data['Close'], seasonal_periods=12, trend='add', seasonal='add').fit()
+# Train the VAR model
+model = VAR(train_data[features])
+model_fit = model.fit(maxlags=5, ic='aic')
 
-# Iterate through the test data and make predictions
-for date in test_data.index:
-    # Forecast the next value
-    y_pred = fit.forecast(1).values[0]
+# Make predictions on the test data
+prediction = model_fit.forecast(train_data[features].values[-5:], steps=len(test_data))
+y_pred_var = prediction[:, 0]  # Use only the first column (Close price)
 
-    # Append the prediction to the list
-    y_pred_exp.append(y_pred)
+# Evaluate the VAR Model
+mae_var = mean_absolute_error(y_true, y_pred_var)
+rmse_var = np.sqrt(mean_squared_error(y_true, y_pred_var))
 
-    # Update the model with the actual value from the test data
-    fit = ExponentialSmoothing(combined_data[:date].dropna(), seasonal_periods=12, trend='add', seasonal='add').fit()
-
-# Evaluate the Exponential Smoothing Model
-mae_exp = mean_absolute_error(y_true, y_pred_exp)
-rmse_exp = np.sqrt(mean_squared_error(y_true, y_pred_exp))
-
-st.write(f"### Exponential Smoothing Model")
-st.write(f"Mean Absolute Error (MAE): {mae_exp:.2f}")
-st.write(f"Root Mean Squared Error (RMSE): {rmse_exp:.2f}")
+st.write(f"### Vector Autoregression (VAR) Model")
+st.write(f"Mean Absolute Error (MAE): {mae_var:.2f}")
+st.write(f"Root Mean Squared Error (RMSE): {rmse_var:.2f}")
 
 # 8. Visualize the Predictions (All Models)
 st.write("### Forecast Comparison")
@@ -118,7 +112,7 @@ fig, ax = plt.subplots(figsize=(12, 6))
 ax.plot(test_data['Close'], label='Actual', color='blue')
 ax.plot(test_data.index, y_pred_naive, label='Naive Forecast', color='green')
 ax.plot(test_data.index, y_pred_sma, label=f'SMA ({window_size} days)', color='red')
-ax.plot(test_data.index, y_pred_exp, label='Exponential Smoothing', color='purple')
+ax.plot(test_data.index, y_pred_var, label='VAR Model', color='orange')
 ax.set_xlabel('Date')
 ax.set_ylabel('Price (USD)')
 ax.set_title('Forecast Comparison')
