@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import datetime
-from statsmodels.tsa.api import VAR
+from statsmodels.tsa.ar.model import AutoReg
 
 # 1. Data Acquisition (same as before, with caching)
 @st.cache_data
@@ -86,27 +86,23 @@ st.write(f"### Simple Moving Average (SMA) - Window Size: {window_size}")
 st.write(f"Mean Absolute Error (MAE): {mae_sma:.2f}")
 st.write(f"Root Mean Squared Error (RMSE): {rmse_sma:.2f}")
 
-# 7. Vector Autoregression (VAR) Model - COMMENTED OUT
-"""
-# Select the features to be used in the VAR model
-features = ['Close', 'Open', 'High', 'Low', 'Volume'] #Using all
+# 7. Autoregression (AR) Model
 
-# Train the VAR model
-model = VAR(train_data[features])
-model_fit = model.fit(maxlags=5, ic='aic')
+# Train the AR model
+model = AutoReg(train_data['Close'], lags=5)
+model_fit = model.fit()
 
 # Make predictions on the test data
-prediction = model_fit.forecast(train_data[features].values[-5:], steps=len(test_data))
-y_pred_var = prediction[:, 0]  # Use only the first column (Close price)
+predictions = model_fit.predict(start=len(train_data), end=len(data)-1)
+y_pred_ar = predictions.values
 
-# Evaluate the VAR Model
-mae_var = mean_absolute_error(y_true, y_pred_var)
-rmse_var = np.sqrt(mean_squared_error(y_true, y_pred_var))
+# Evaluate the AR Model
+mae_ar = mean_absolute_error(y_true, y_pred_ar)
+rmse_ar = np.sqrt(mean_squared_error(y_true, y_pred_ar))
 
-st.write(f"### Vector Autoregression (VAR) Model")
-st.write(f"Mean Absolute Error (MAE): {mae_var:.2f}")
-st.write(f"Root Mean Squared Error (RMSE): {rmse_var:.2f}")
-"""
+st.write(f"### Autoregression (AR) Model")
+st.write(f"Mean Absolute Error (MAE): {mae_ar:.2f}")
+st.write(f"Root Mean Squared Error (RMSE): {rmse_ar:.2f}")
 
 # 8. Visualize the Predictions (All Models)
 st.write("### Forecast Comparison")
@@ -114,7 +110,7 @@ fig, ax = plt.subplots(figsize=(12, 6))
 ax.plot(test_data['Close'], label='Actual', color='blue')
 ax.plot(test_data.index, y_pred_naive, label='Naive Forecast', color='green')
 ax.plot(test_data.index, y_pred_sma, label=f'SMA ({window_size} days)', color='red')
-#ax.plot(test_data.index, y_pred_var, label='VAR Model', color='orange') # removed to graph
+ax.plot(test_data.index, y_pred_ar, label='AR Model', color='orange')
 ax.set_xlabel('Date')
 ax.set_ylabel('Price (USD)')
 ax.set_title('Forecast Comparison')
