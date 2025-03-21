@@ -7,15 +7,15 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 # 1. Data Acquisition (same as before, with caching)
 @st.cache_data
-def get_data(ticker, start_date, end_date):
+def get_data(ticker: str, start_date: str, end_date: str): # Add type hints for ticker start_date end_date
     data = yf.download(ticker, start=start_date, end=end_date)
     return data
 
 ticker = "CL=F"  # WTI Crude Oil Futures
-start_date = "2010-01-01"
-end_date = "2024-01-01"
+start_date = str("2010-01-01") # Added str
+end_date = str("2024-01-01") # Added str
 
-data = get_data(ticker, start=start_date, end=end_date)
+data = get_data(ticker, start_date, end_date)
 
 # 2. Data Cleaning (same as before)
 data.fillna(method='ffill', inplace=True)
