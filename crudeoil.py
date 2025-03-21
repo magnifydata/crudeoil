@@ -88,14 +88,22 @@ st.write(f"Mean Absolute Error (MAE): {mae_sma:.2f}")
 st.write(f"Root Mean Squared Error (RMSE): {rmse_sma:.2f}")
 
 # 7. Autoregression (AR) Model
-# Train the AR model
-model = ARIMA(train_data['Close'], order=(5,0,0)) # added the new ARIMA
-model_fit = model.fit()
+# Initialize list to store predictions
+y_pred_ar = []
 
-# Make predictions on the test data
-predictions = model_fit.predict(start=len(train_data), end=len(data)-1)
-y_pred_ar = predictions.values
-
+# Iterate through the test data and make predictions
+history = [x for x in train_data['Close']]
+for i in range(len(test_data)):
+    # Train the AR model
+    model = ARIMA(history, order=(5, 0, 0)) # added the new ARIMA
+    model_fit = model.fit()
+    # Make predictions on the test data
+    output = model_fit.forecast()
+    yhat = output[0]
+    # Append the prediction to the list
+    y_pred_ar.append(yhat)
+    obs = test_data['Close'][i]
+    history.append(obs)
 # Evaluate the AR Model
 mae_ar = mean_absolute_error(y_true, y_pred_ar)
 rmse_ar = np.sqrt(mean_squared_error(y_true, y_pred_ar))
