@@ -41,12 +41,11 @@ st.write(f"Testing data from: {test_data.index.min()} to {test_data.index.max()}
 # 5. Baseline Model: Naive Forecast
 # Predict the next value is the same as the current value
 y_true = test_data['Close'].values
-y_pred_naive = train_data['Close'].iloc[-1]  # Last value of training data
-y_pred = [y_pred_naive] * len(test_data) # creates a list - REMOVE THIS LINE. WE DO NOT NEED IT.
+y_pred = test_data['Close'].shift(1).fillna(train_data['Close'].iloc[-1]).values  # Naive forecast: previous day's actual value
 
 # 6. Evaluate the Baseline Model
-mae_naive = mean_absolute_error(y_true, y_pred) # change y_pred_naive to y_pred
-rmse_naive = np.sqrt(mean_squared_error(y_true, y_pred)) # change y_pred_naive to y_pred
+mae_naive = mean_absolute_error(y_true, y_pred)
+rmse_naive = np.sqrt(mean_squared_error(y_true, y_pred))
 
 st.write(f"### Naive Forecast - Baseline Model")
 st.write(f"Mean Absolute Error (MAE): {mae_naive:.2f}")
@@ -56,7 +55,7 @@ st.write(f"Root Mean Squared Error (RMSE): {rmse_naive:.2f}")
 st.write("### Naive Forecast vs. Actual Values")
 fig, ax = plt.subplots(figsize=(12, 6))
 ax.plot(test_data['Close'], label='Actual', color='blue')
-ax.axhline(y=y_pred_naive, color='red', linestyle='-', label=f'Naive Forecast: {y_pred_naive:.2f}') # show the forecast as a horizontal line
+ax.plot(test_data.index, y_pred, label='Naive Forecast', color='red')  # Plot the predictions
 ax.set_xlabel('Date')
 ax.set_ylabel('Price (USD)')
 ax.set_title('Naive Forecast vs. Actual Values')
