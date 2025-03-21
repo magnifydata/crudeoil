@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import datetime
+#from statsmodels.tsa.ar.model import AutoReg #removed and adding the line below
 from statsmodels.tsa.arima.model import ARIMA
 
 # 1. Data Acquisition (same as before, with caching)
@@ -94,7 +95,7 @@ y_pred_ar = []
 order = (5, 0, 0)
 
 # Use all data for training
-history = combined_data['Close'].to_list()
+history = combined_data['Close'].values.tolist()  #  changed
 # Iterate through the test data and make predictions
 for i in range(len(test_data)):
     # Train the AR model
