@@ -102,7 +102,7 @@ for i in range(len(test_data)):
     y_pred_exp.append(y_pred)
 
     # Update the model with the actual value from the test data
-    new_fit = ExponentialSmoothing(combined_data[:test_index + i], seasonal_periods=12, trend='add', seasonal='add').fit() # adding the value throught time.
+    new_fit = ExponentialSmoothing(combined_data[:test_index + i].dropna(), seasonal_periods=12, trend='add', seasonal='add').fit() # adding the value throught time.
     fit = new_fit
 
 # Evaluate the Exponential Smoothing Model
