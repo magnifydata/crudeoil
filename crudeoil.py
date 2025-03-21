@@ -41,12 +41,12 @@ st.write(f"Testing data from: {test_data.index.min()} to {test_data.index.max()}
 # 5. Baseline Model: Naive Forecast
 # Predict the next value is the same as the current value
 y_true = test_data['Close'].values
-y_pred_naive = train_data['Close'].iloc[-1]  # Last value of training data, repeated for the test set
-y_pred = [y_pred_naive] * len(test_data) # creates a list
+y_pred_naive = train_data['Close'].iloc[-1]  # Last value of training data
+y_pred = [y_pred_naive] * len(test_data) # creates a list - REMOVE THIS LINE. WE DO NOT NEED IT.
 
 # 6. Evaluate the Baseline Model
-mae_naive = mean_absolute_error(y_true, y_pred)
-rmse_naive = np.sqrt(mean_squared_error(y_true, y_pred))
+mae_naive = mean_absolute_error(y_true, y_pred) # change y_pred_naive to y_pred
+rmse_naive = np.sqrt(mean_squared_error(y_true, y_pred)) # change y_pred_naive to y_pred
 
 st.write(f"### Naive Forecast - Baseline Model")
 st.write(f"Mean Absolute Error (MAE): {mae_naive:.2f}")
